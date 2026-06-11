@@ -32,12 +32,7 @@ import os
 import glob
 import sys
 
-from segmentacion_kmeans import segmentar_kmeans_hsv
-from segmentacion_otsu import otsu_con_overlay
-from watershed import aplicar_watershed
-from histograma import dibujar_histograma_con_ecualizacion, dibujar_histograma_canal
-from bordes import canny_coloreado, aplicar_blur_gaussiano
-from color import hsv_para_display, ajustar_brillo_contraste, ajustar_hsv
+from motor import Motor
 
 # ---------------------------------------------------------------------------
 # Configuración
@@ -122,35 +117,6 @@ def cargar_rutas_imagenes(carpeta_datos):
 
 
 # ---------------------------------------------------------------------------
-# Transformada de Fourier (Unidad 6)
-# ---------------------------------------------------------------------------
-
-def calcular_espectro_fourier(imagen_bgr):
-    """
-    Calcula el espectro de frecuencias con la Transformada Discreta de Fourier.
-
-    Unidad 6 – Transformada de Fourier:
-    La DFT descompone la imagen en sus componentes de frecuencia. El centro del
-    espectro (baja frecuencia) representa variaciones lentas de brillo global;
-    las frecuencias altas en la periferia representan detalles finos y ruido.
-    Se aplica fftshift para centrar la componente DC y escala logarítmica para
-    comprimir el amplio rango dinámico de la magnitud.
-
-    Args:
-        imagen_bgr: Imagen en formato BGR
-
-    Returns:
-        Imagen BGR con el espectro en falso color (colormap INFERNO)
-    """
-    gris = cv2.cvtColor(imagen_bgr, cv2.COLOR_BGR2GRAY)
-    dft = cv2.dft(np.float32(gris), flags=cv2.DFT_COMPLEX_OUTPUT)
-    dft_centrado = np.fft.fftshift(dft)
-    magnitud = cv2.magnitude(dft_centrado[:, :, 0], dft_centrado[:, :, 1])
-    espectro = cv2.normalize(np.log1p(magnitud), None, 0, 255, cv2.NORM_MINMAX)
-    return cv2.applyColorMap(espectro.astype(np.uint8), cv2.COLORMAP_INFERNO)
-
-
-# ---------------------------------------------------------------------------
 # Ventana de controles (trackbars)
 # ---------------------------------------------------------------------------
 
@@ -231,14 +197,15 @@ def procesar_modo(img, modo):
     """
     Aplica la técnica de procesamiento correspondiente al modo activo.
 
-    Lee los valores actuales de los trackbars y procesa la imagen en tiempo real.
-    Los modos sin sliders (5, 6, 7) se procesan directamente sin leer trackbars.
+    Lee los valores actuales de los trackbars y delega en Motor, que
+    internamente usa PillowProcessor (modos básicos) u OpenCVProcessor
+    (modos avanzados).
 
     Unidades cubiertas:
-      Modo 1 → Unidades 3 y 5 (blur, brillo, contraste)
+      Modo 1 → Unidades 3 y 5 (blur, brillo, contraste — Pillow)
       Modo 2 → Unidad 5 (Canny)
       Modo 3 → Unidad 7 (K-means HSV)
-      Modo 4 → Unidad 7 (Otsu)
+      Modo 4 → Unidad 7 (Otsu automático o umbral manual)
       Modo 5 → Unidad 7 (Watershed — umbral de transformada de distancia)
       Modo 6 → Unidad 4 (histograma por canal + ecualización)
       Modo 7 → Unidad 6 (Fourier — espectro o reconstrucción con filtro pasa bajos)
@@ -251,78 +218,47 @@ def procesar_modo(img, modo):
     Returns:
         Imagen BGR procesada lista para mostrar
     """
+    motor = Motor(img)
+
     if modo == 1:
         blur_val      = cv2.getTrackbarPos("Blur  0=sin  10=max", VENTANA_CTRL)
         brillo_raw    = cv2.getTrackbarPos("Brillo  0=-100  200=+100", VENTANA_CTRL)
         contraste_raw = cv2.getTrackbarPos("Contraste x0.1  (10=1.0x)", VENTANA_CTRL)
-
-        kernel   = blur_val * 2 + 1          # 1, 3, 5, ..., 21
-        brillo   = brillo_raw - 100          # −100 a +100
-        contraste = max(0.1, contraste_raw / 10.0)  # 0.1 a 3.0
-
-        resultado = aplicar_blur_gaussiano(img, kernel_size=(kernel, kernel))
-        return ajustar_brillo_contraste(resultado, brillo, contraste)
+        kernel    = blur_val * 2 + 1                    # 1, 3, 5, ..., 21
+        brillo    = brillo_raw - 100                    # −100 a +100
+        contraste = max(0.1, contraste_raw / 10.0)      # 0.1 a 3.0
+        return motor.blur_y_brillo(kernel, brillo, contraste)
 
     elif modo == 2:
         bajo = cv2.getTrackbarPos("Canny  Umbral Bajo  (0-300)", VENTANA_CTRL)
         alto = cv2.getTrackbarPos("Canny  Umbral Alto  (0-300)", VENTANA_CTRL)
-        return canny_coloreado(img, umbral_bajo=bajo, umbral_alto=alto)
+        return motor.bordes_canny(bajo, alto)
 
     elif modo == 3:
         k_offset = cv2.getTrackbarPos("K-means  k-2  (0=k2  4=k6)", VENTANA_CTRL)
-        k = k_offset + 2  # 2 a 6
-        return segmentar_kmeans_hsv(img, k=k, intentos=3, max_iter=50)
+        return motor.segmentar_kmeans(k_offset + 2)
 
     elif modo == 4:
         umbral_manual = cv2.getTrackbarPos("Umbral  0=auto Otsu  1-255=manual", VENTANA_CTRL)
-        if umbral_manual == 0:
-            return otsu_con_overlay(img)
-        # Umbral manual con overlay igual al de Otsu
-        gris = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        suavizada = cv2.GaussianBlur(gris, (5, 5), 0)
-        _, mascara = cv2.threshold(suavizada, umbral_manual, 255, cv2.THRESH_BINARY)
-        fondo = (img * 0.3).astype(np.uint8)
-        fondo[:, :, 0] = np.clip(fondo[:, :, 0].astype(int) + 60, 0, 255)
-        resultado = fondo.copy()
-        resultado[mascara == 255] = img[mascara == 255]
-        contornos, _ = cv2.findContours(mascara, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cv2.drawContours(resultado, contornos, -1, (0, 255, 255), 1)
-        return resultado
+        return motor.umbralizar_otsu(umbral_manual)
 
     elif modo == 5:
         umbral_pct = cv2.getTrackbarPos("Umbral dist %  (1-90  def=50)", VENTANA_CTRL)
-        umbral_dist = max(0.01, umbral_pct / 100.0)
-        return aplicar_watershed(img, umbral_dist=umbral_dist)
+        return motor.aplicar_watershed(max(0.01, umbral_pct / 100.0))
 
     elif modo == 6:
         canal = cv2.getTrackbarPos("Canal  0=Gris 1=R 2=G 3=B", VENTANA_CTRL)
-        return dibujar_histograma_canal(img, canal=canal, alto=ALTO_IMG, ancho=ANCHO_IMG)
+        return motor.histograma_canal(canal, ALTO_IMG, ANCHO_IMG)
 
     elif modo == 7:
         radio = cv2.getTrackbarPos("Filtro pasa bajo  radio px  (0=sin)", VENTANA_CTRL)
-        if radio == 0:
-            return calcular_espectro_fourier(img)
-        # Filtro pasa bajos: conservar solo frecuencias dentro del radio dado
-        gris = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        dft = cv2.dft(np.float32(gris), flags=cv2.DFT_COMPLEX_OUTPUT)
-        dft_centrado = np.fft.fftshift(dft)
-        # Máscara circular centrada
-        h, w = gris.shape
-        cy, cx = h // 2, w // 2
-        Y, X = np.ogrid[:h, :w]
-        mascara = ((X - cx) ** 2 + (Y - cy) ** 2 <= radio ** 2).astype(np.float32)
-        dft_filtrado = dft_centrado * mascara[:, :, np.newaxis]
-        # Transformada inversa para reconstruir la imagen en dominio espacial
-        dft_ishift = np.fft.ifftshift(dft_filtrado)
-        img_rec = cv2.idft(dft_ishift, flags=cv2.DFT_SCALE | cv2.DFT_REAL_OUTPUT)
-        img_rec = cv2.normalize(img_rec, None, 0, 255, cv2.NORM_MINMAX)
-        return cv2.cvtColor(img_rec.astype(np.uint8), cv2.COLOR_GRAY2BGR)
+        return motor.fourier(radio)
 
     elif modo == 8:
         delta_h  = cv2.getTrackbarPos("Tono H  offset  (90=sin cambio)", VENTANA_CTRL) - 90
         escala_s = cv2.getTrackbarPos("Saturacion x%   (100=sin cambio)", VENTANA_CTRL) / 100.0
         escala_v = cv2.getTrackbarPos("Brillo V  x%    (100=sin cambio)", VENTANA_CTRL) / 100.0
-        return ajustar_hsv(img, delta_h=delta_h, escala_s=escala_s, escala_v=escala_v)
+        return motor.ajustar_hsv(delta_h, escala_s, escala_v)
 
     return img.copy()
 
