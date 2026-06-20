@@ -3,7 +3,11 @@ Editor Interactivo de Imágenes de Frutas
 =========================================
 Trabajo Práctico Final – Técnicas de Procesamiento Digital de Imágenes
 Tecnicatura Superior en Ciencia de Datos e Inteligencia Artificial
+<<<<<<< HEAD
 IFTS N°18 – CABA – Ciclo 2026
+=======
+IFTS N°18 – CABA – Ciclo 2025
+>>>>>>> 82b48295fff48267ca2db16df45c13a73a22c430
 Profesor: Bonini Juan Ignacio
 
 Herramienta interactiva con sliders (cv2.createTrackbar) que permite ajustar
@@ -32,12 +36,16 @@ import os
 import glob
 import sys
 
+<<<<<<< HEAD
 from segmentacion_kmeans import segmentar_kmeans_hsv
 from segmentacion_otsu import otsu_con_overlay
 from watershed import aplicar_watershed
 from histograma import dibujar_histograma_con_ecualizacion, dibujar_histograma_canal
 from bordes import canny_coloreado, aplicar_blur_gaussiano
 from color import hsv_para_display, ajustar_brillo_contraste, ajustar_hsv
+=======
+from motor import Motor
+>>>>>>> 82b48295fff48267ca2db16df45c13a73a22c430
 
 # ---------------------------------------------------------------------------
 # Configuración
@@ -122,6 +130,7 @@ def cargar_rutas_imagenes(carpeta_datos):
 
 
 # ---------------------------------------------------------------------------
+<<<<<<< HEAD
 # Transformada de Fourier (Unidad 6)
 # ---------------------------------------------------------------------------
 
@@ -151,6 +160,8 @@ def calcular_espectro_fourier(imagen_bgr):
 
 
 # ---------------------------------------------------------------------------
+=======
+>>>>>>> 82b48295fff48267ca2db16df45c13a73a22c430
 # Ventana de controles (trackbars)
 # ---------------------------------------------------------------------------
 
@@ -222,6 +233,10 @@ def crear_controles(modo):
     cv2.resizeWindow(VENTANA_CTRL, 440, 160)
     _necesita_actualizar[0] = True
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 82b48295fff48267ca2db16df45c13a73a22c430
 # ---------------------------------------------------------------------------
 # Procesamiento según modo activo
 # ---------------------------------------------------------------------------
@@ -230,6 +245,7 @@ def procesar_modo(img, modo):
     """
     Aplica la técnica de procesamiento correspondiente al modo activo.
 
+<<<<<<< HEAD
     Lee los valores actuales de los trackbars y procesa la imagen en tiempo real.
     Los modos sin sliders (5, 6, 7) se procesan directamente sin leer trackbars.
 
@@ -238,6 +254,17 @@ def procesar_modo(img, modo):
       Modo 2 → Unidad 5 (Canny)
       Modo 3 → Unidad 7 (K-means HSV)
       Modo 4 → Unidad 7 (Otsu)
+=======
+    Lee los valores actuales de los trackbars y delega en Motor, que
+    internamente usa PillowProcessor (modos básicos) u OpenCVProcessor
+    (modos avanzados).
+
+    Unidades cubiertas:
+      Modo 1 → Unidades 3 y 5 (blur, brillo, contraste — Pillow)
+      Modo 2 → Unidad 5 (Canny)
+      Modo 3 → Unidad 7 (K-means HSV)
+      Modo 4 → Unidad 7 (Otsu automático o umbral manual)
+>>>>>>> 82b48295fff48267ca2db16df45c13a73a22c430
       Modo 5 → Unidad 7 (Watershed — umbral de transformada de distancia)
       Modo 6 → Unidad 4 (histograma por canal + ecualización)
       Modo 7 → Unidad 6 (Fourier — espectro o reconstrucción con filtro pasa bajos)
@@ -250,10 +277,16 @@ def procesar_modo(img, modo):
     Returns:
         Imagen BGR procesada lista para mostrar
     """
+<<<<<<< HEAD
+=======
+    motor = Motor(img)
+
+>>>>>>> 82b48295fff48267ca2db16df45c13a73a22c430
     if modo == 1:
         blur_val      = cv2.getTrackbarPos("Blur  0=sin  10=max", VENTANA_CTRL)
         brillo_raw    = cv2.getTrackbarPos("Brillo  0=-100  200=+100", VENTANA_CTRL)
         contraste_raw = cv2.getTrackbarPos("Contraste x0.1  (10=1.0x)", VENTANA_CTRL)
+<<<<<<< HEAD
 
         kernel   = blur_val * 2 + 1          # 1, 3, 5, ..., 21
         brillo   = brillo_raw - 100          # −100 a +100
@@ -261,10 +294,17 @@ def procesar_modo(img, modo):
 
         resultado = aplicar_blur_gaussiano(img, kernel_size=(kernel, kernel))
         return ajustar_brillo_contraste(resultado, brillo, contraste)
+=======
+        kernel    = blur_val * 2 + 1                    # 1, 3, 5, ..., 21
+        brillo    = brillo_raw - 100                    # −100 a +100
+        contraste = max(0.1, contraste_raw / 10.0)      # 0.1 a 3.0
+        return motor.blur_y_brillo(kernel, brillo, contraste)
+>>>>>>> 82b48295fff48267ca2db16df45c13a73a22c430
 
     elif modo == 2:
         bajo = cv2.getTrackbarPos("Canny  Umbral Bajo  (0-300)", VENTANA_CTRL)
         alto = cv2.getTrackbarPos("Canny  Umbral Alto  (0-300)", VENTANA_CTRL)
+<<<<<<< HEAD
         return canny_coloreado(img, umbral_bajo=bajo, umbral_alto=alto)
 
     elif modo == 3:
@@ -316,12 +356,39 @@ def procesar_modo(img, modo):
         img_rec = cv2.idft(dft_ishift, flags=cv2.DFT_SCALE | cv2.DFT_REAL_OUTPUT)
         img_rec = cv2.normalize(img_rec, None, 0, 255, cv2.NORM_MINMAX)
         return cv2.cvtColor(img_rec.astype(np.uint8), cv2.COLOR_GRAY2BGR)
+=======
+        return motor.bordes_canny(bajo, alto)
+
+    elif modo == 3:
+        k_offset = cv2.getTrackbarPos("K-means  k-2  (0=k2  4=k6)", VENTANA_CTRL)
+        return motor.segmentar_kmeans(k_offset + 2)
+
+    elif modo == 4:
+        umbral_manual = cv2.getTrackbarPos("Umbral  0=auto Otsu  1-255=manual", VENTANA_CTRL)
+        return motor.umbralizar_otsu(umbral_manual)
+
+    elif modo == 5:
+        umbral_pct = cv2.getTrackbarPos("Umbral dist %  (1-90  def=50)", VENTANA_CTRL)
+        return motor.aplicar_watershed(max(0.01, umbral_pct / 100.0))
+
+    elif modo == 6:
+        canal = cv2.getTrackbarPos("Canal  0=Gris 1=R 2=G 3=B", VENTANA_CTRL)
+        return motor.histograma_canal(canal, ALTO_IMG, ANCHO_IMG)
+
+    elif modo == 7:
+        radio = cv2.getTrackbarPos("Filtro pasa bajo  radio px  (0=sin)", VENTANA_CTRL)
+        return motor.fourier(radio)
+>>>>>>> 82b48295fff48267ca2db16df45c13a73a22c430
 
     elif modo == 8:
         delta_h  = cv2.getTrackbarPos("Tono H  offset  (90=sin cambio)", VENTANA_CTRL) - 90
         escala_s = cv2.getTrackbarPos("Saturacion x%   (100=sin cambio)", VENTANA_CTRL) / 100.0
         escala_v = cv2.getTrackbarPos("Brillo V  x%    (100=sin cambio)", VENTANA_CTRL) / 100.0
+<<<<<<< HEAD
         return ajustar_hsv(img, delta_h=delta_h, escala_s=escala_s, escala_v=escala_v)
+=======
+        return motor.ajustar_hsv(delta_h, escala_s, escala_v)
+>>>>>>> 82b48295fff48267ca2db16df45c13a73a22c430
 
     return img.copy()
 

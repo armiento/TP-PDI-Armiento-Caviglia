@@ -2,3 +2,8 @@ opencv-python
 numpy
 matplotlib
 scikit-learn
+<<<<<<< HEAD
+=======
+Pillow
+streamlit
+>>>>>>> 82b48295fff48267ca2db16df45c13a73a22c430
