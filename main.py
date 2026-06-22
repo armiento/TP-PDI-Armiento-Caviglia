@@ -1,12 +1,11 @@
 """
-Editor Interactivo de Imágenes de Frutas 
-=====================================================
+Editor Interactivo de Imágenes de Frutas – INTERFAZ DROPDOWN
+===========================================================
 Trabajo Práctico Final – Técnicas de Procesamiento Digital de Imágenes
 Tecnicatura Superior en Ciencia de Datos e Inteligencia Artificial
 IFTS N°18 – CABA – Ciclo 2026
 Profesor: Bonini Juan Ignacio
-
-Interfaz optimizada (para control total con el MOUSE)
+Alumnos: Armiento, Fernando – Caviglia, Paula
 """
 
 import cv2
@@ -40,10 +39,10 @@ MODOS = {
 }
 
 # ---------------------------------------------------------------------------
-# Estado global de navegación (Sincronizado con Mouse y Sliders)
+# Estado global de navegación (Sincronizado con Mouse y Menú Desplegable)
 # ---------------------------------------------------------------------------
 _necesita_actualizar = [True]
-_estado_navegacion = {"indice": 0, "total": 0, "modo": 1, "guardar": False}
+_estado_navegacion = {"indice": 0, "total": 0, "modo": 1, "guardar": False, "menu_abierto": False}
 
 
 def _cb(_val):
@@ -51,28 +50,38 @@ def _cb(_val):
     _necesita_actualizar[0] = True
 
 
-def _cb_cambio_modo(val):
-    """Callback para el Menú Desplegable (Slider Maestro)."""
-    global _estado_navegacion
-    nuevo_modo = val + 1
-    if nuevo_modo != _estado_navegacion["modo"]:
-        _estado_navegacion["modo"] = nuevo_modo
-        _necesita_actualizar[0] = True
-
-
 def mouse_handler(event, x, y, flags, param):
-    """Manejador del mouse: Detecta clicks en la botonera del encabezado."""
+    """Manejador del mouse para botones y Menú Desplegable flotante."""
     global _estado_navegacion
     if event == cv2.EVENT_LBUTTONDOWN:
-        # Los botones están ubicados en la franja superior (y entre 12 y 40 px)
-        if 12 <= y <= 40:
+        
+        # 1. SI EL MENÚ ESTÁ ABIERTO: Detectar qué opción tocó de la lista vertical
+        if _estado_navegacion["menu_abierto"]:
+            # El menú se despliega verticalmente debajo del botón central (X: 230-410)
+            if 230 <= x <= 410 and 42 <= y <= 42 + (8 * 25):
+                opcion_seleccionada = ((y - 42) // 25) + 1
+                _estado_navegacion["modo"] = opcion_seleccionada
+                _estado_navegacion["menu_abierto"] = False
+                _necesita_actualizar[0] = True
+                return
+            else:
+                # Si hace click afuera, se cierra el menú automáticamente
+                _estado_navegacion["menu_abierto"] = False
+                _necesita_actualizar[0] = True
+                return
+
+        # 2. BOTONES DEL ENCABEZADO (Cuando el menú está cerrado)
+        if 12 <= y <= 38:
             if 10 <= x <= 110:     # Botón << ANTERIOR
                 _estado_navegacion["indice"] = (_estado_navegacion["indice"] - 1) % _estado_navegacion["total"]
                 _necesita_actualizar[0] = True
             elif 120 <= x <= 220:  # Botón SIGUIENTE >>
                 _estado_navegacion["indice"] = (_estado_navegacion["indice"] + 1) % _estado_navegacion["total"]
                 _necesita_actualizar[0] = True
-            elif 230 <= x <= 330:  # Botón GUARDAR CAPTURA
+            elif 230 <= x <= 410:  # Botón central del MENÚ DESPLEGABLE
+                _estado_navegacion["menu_abierto"] = True
+                _necesita_actualizar[0] = True
+            elif 420 <= x <= 510:  # Botón GUARDAR
                 _estado_navegacion["guardar"] = True
                 _necesita_actualizar[0] = True
 
@@ -111,10 +120,10 @@ def cargar_rutas_imagenes(carpeta_datos):
 
 
 # ---------------------------------------------------------------------------
-# Interfaz Gráfica: Ventana de Controles Estables
+# Interfaz Gráfica: Ventana de Parámetros Específicos
 # ---------------------------------------------------------------------------
 def crear_controles(modo):
-    """Recrea los sliders inyectando el Menú Desplegable fijo arriba."""
+    """Recrea los sliders específicos sin duplicar el control de modo."""
     try:
         cv2.destroyWindow(VENTANA_CTRL)
     except Exception:
@@ -123,10 +132,6 @@ def crear_controles(modo):
 
     cv2.namedWindow(VENTANA_CTRL, cv2.WINDOW_NORMAL)
 
-    # MENÚ DESPLEGABLE DE EFECTOS (Slider permanente arriba)
-    cv2.createTrackbar("MENU: Efectos 1-8", VENTANA_CTRL, modo - 1, 7, _cb_cambio_modo)
-
-    # Sliders específicos según la unidad
     if modo == 1:
         cv2.createTrackbar("Blur  0=sin  10=max", VENTANA_CTRL, 2, 10, _cb)
         cv2.createTrackbar("Brillo  0=-100  200=+100", VENTANA_CTRL, 100, 200, _cb)
@@ -149,7 +154,7 @@ def crear_controles(modo):
         cv2.createTrackbar("Saturacion x%   (100=sin cambio)", VENTANA_CTRL, 100, 200, _cb)
         cv2.createTrackbar("Brillo V  x%    (100=sin cambio)", VENTANA_CTRL, 100, 200, _cb)
 
-    cv2.resizeWindow(VENTANA_CTRL, 460, 180)
+    cv2.resizeWindow(VENTANA_CTRL, 460, 150)
     _necesita_actualizar[0] = True
 
 
@@ -159,10 +164,7 @@ def procesar_modo(img, modo):
         blur_val      = cv2.getTrackbarPos("Blur  0=sin  10=max", VENTANA_CTRL)
         brillo_raw    = cv2.getTrackbarPos("Brillo  0=-100  200=+100", VENTANA_CTRL)
         contraste_raw = cv2.getTrackbarPos("Contraste x0.1  (10=1.0x)", VENTANA_CTRL)
-        kernel    = blur_val * 2 + 1
-        brillo    = brillo_raw - 100
-        contraste = max(0.1, contraste_raw / 10.0)
-        return motor.blur_y_brillo(kernel, brillo, contraste)
+        return motor.blur_y_brillo(blur_val * 2 + 1, brillo_raw - 100, max(0.1, contraste_raw / 10.0))
     elif modo == 2:
         bajo = cv2.getTrackbarPos("Canny  Umbral Bajo  (0-300)", VENTANA_CTRL)
         alto = cv2.getTrackbarPos("Canny  Umbral Alto  (0-300)", VENTANA_CTRL)
@@ -206,10 +208,10 @@ def _info_slider(modo):
             return f"k={k} clusters de color"
         elif modo == 4:
             u = cv2.getTrackbarPos("Umbral  0=auto Otsu  1-255=manual", VENTANA_CTRL)
-            return f"umbral={'Otsu Automático' if u == 0 else str(u)}"
+            return f"umbral={'Otsu Automatico' if u == 0 else str(u)}"
         elif modo == 5:
             pct = cv2.getTrackbarPos("Umbral dist %  (1-90  def=50)", VENTANA_CTRL)
-            return f"Distancia = {pct}% del máximo"
+            return f"Distancia = {pct}% del maximo"
         elif modo == 6:
             c = cv2.getTrackbarPos("Canal  0=Gris 1=R 2=G 3=B", VENTANA_CTRL)
             return f"canal = {['Grises', 'R (rojo)', 'G (verde)', 'B (azul)'][c]}"
@@ -220,20 +222,20 @@ def _info_slider(modo):
             dh = cv2.getTrackbarPos("Tono H  offset  (90=sin cambio)", VENTANA_CTRL) - 90
             s  = cv2.getTrackbarPos("Saturacion x%   (100=sin cambio)", VENTANA_CTRL)
             v  = cv2.getTrackbarPos("Brillo V  x%    (100=sin cambio)", VENTANA_CTRL)
-            return f"H {dh:+d}°   Saturacion={s}%   Brillo={v}%"
+            return f"H {dh:+d}  Saturacion={s}%   Brillo={v}%"
     except Exception:
         pass
     return ""
 
 
 # ---------------------------------------------------------------------------
-# Ensamblado del Display (Con Botonera Virtual Integrada)
+# Ensamblado del Display (Con Botonera Virtual Integrada y Menú Flotante)
 # ---------------------------------------------------------------------------
 def construir_display(img_orig, img_proc, modo, nombre_fruta, indice, total):
+    global _estado_navegacion
     orig = cv2.resize(img_orig, (ANCHO_IMG, ALTO_IMG))
     proc = cv2.resize(img_proc, (ANCHO_IMG, ALTO_IMG))
 
-    # Etiquetas fijas internas
     cv2.rectangle(orig, (0, 0), (ANCHO_IMG, 22), (20, 20, 20), -1)
     cv2.putText(orig, "Original", (5, 16), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1, cv2.LINE_AA)
 
@@ -244,7 +246,7 @@ def construir_display(img_orig, img_proc, modo, nombre_fruta, indice, total):
     cuerpo = np.hstack([orig, sep_v, proc])
     ancho_panel = cuerpo.shape[1]
 
-    # DIBUJAR ENCABEZADO CON BOTONES INTERACTIVOS MOUSE
+    # CABECERA PRINCIPAL (Gris oscuro)
     header = np.full((55, ancho_panel, 3), (25, 25, 25), dtype=np.uint8)
     
     # Botón 1: Anterior
@@ -257,39 +259,51 @@ def construir_display(img_orig, img_proc, modo, nombre_fruta, indice, total):
     cv2.rectangle(header, (120, 12), (220, 38), (100, 100, 100), 1)
     cv2.putText(header, "SIGUIENTE >>", (126, 29), cv2.FONT_HERSHEY_SIMPLEX, 0.38, (255, 255, 255), 1, cv2.LINE_AA)
 
-    # Botón 3: Guardar Captura
-    cv2.rectangle(header, (230, 12), (330, 38), (20, 80, 20), -1)
-    cv2.rectangle(header, (230, 12), (330, 38), (50, 150, 50), 1)
-    cv2.putText(header, "GUARDAR", (252, 29), cv2.FONT_HERSHEY_SIMPLEX, 0.38, (200, 255, 200), 1, cv2.LINE_AA)
+    # Botón 3: DISEÑO DEL MENÚ DESPLEGABLE
+    color_btn_menu = (75, 45, 15) if _estado_navegacion["menu_abierto"] else (40, 40, 40)
+    cv2.rectangle(header, (230, 12), (410, 38), color_btn_menu, -1)
+    cv2.rectangle(header, (230, 12), (410, 38), (120, 120, 120), 1)
+    texto_dropdown = f" {MODOS[modo]}  ▾"
+    cv2.putText(header, texto_dropdown[:22], (235, 29), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (255, 255, 200), 1, cv2.LINE_AA)
 
-    # Texto de datos dinámicos a la derecha
-    cv2.putText(
-        header,
-        f"Fruta: {nombre_fruta.title()}  [{indice + 1}/{total}]",
-        (360, 29), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 0), 1, cv2.LINE_AA
-    )
+    # Botón 4: Guardar
+    cv2.rectangle(header, (420, 12), (510, 38), (20, 80, 20), -1)
+    cv2.rectangle(header, (420, 12), (510, 38), (50, 150, 50), 1)
+    cv2.putText(header, "GUARDAR", (435, 29), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (200, 255, 200), 1, cv2.LINE_AA)
+
+    # Texto de Estado de Frutas
+    cv2.putText(header, f"Fruta: {nombre_fruta.title()}  [{indice + 1}/{total}]", (530, 29), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (0, 255, 0), 1, cv2.LINE_AA)
     cv2.line(header, (0, 54), (ancho_panel, 54), (70, 70, 70), 1)
 
-    # Barra inferior
+    panel_completo = np.vstack([header, cuerpo])
+
+    # ── RENDERIZAR LA LISTA DESPLEGADA (Si el menú está abierto) ──
+    if _estado_navegacion["menu_abierto"]:
+        for i, nombre_modo in MODOS.items():
+            y_opcion = 42 + (i - 1) * 25
+            bg_color = (100, 65, 25) if i == modo else (30, 30, 30)
+            cv2.rectangle(panel_completo, (230, y_opcion), (410, y_opcion + 24), bg_color, -1)
+            cv2.rectangle(panel_completo, (230, y_opcion), (410, y_opcion + 24), (60, 60, 60), 1)
+            cv2.putText(panel_completo, nombre_modo, (240, y_opcion + 16), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (255, 255, 255), 1, cv2.LINE_AA)
+
+    # Barra inferior estática
     info_texto = _info_slider(modo)
     info_bar = np.full((26, ancho_panel, 3), (12, 12, 12), dtype=np.uint8)
     if info_texto:
         cv2.putText(info_bar, info_texto, (10, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (170, 170, 0), 1, cv2.LINE_AA)
 
-    return np.vstack([header, cuerpo, info_bar])
+    return np.vstack([panel_completo, info_bar])
 
 
 # ---------------------------------------------------------------------------
-# Bucle Principal
+# Función Ejecutora Principal
 # ---------------------------------------------------------------------------
 def main():
     global _estado_navegacion
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    carpeta_datos = os.path.join(script_dir, CARPETA_DATOS)
-
-    print("=" * 60)
-    print("  Editor Interactivo de Frutas – Interfaz Mejorada (Mouse)")
-    print("=" * 60)
+    
+    # Forzamos las rutas absolutas de tu computadora para evitar cierres instantáneos
+    carpeta_datos = r"C:\Users\Paula\Documents\TP Integrador - Tec Proc de Imagenes\images"
+    script_dir = r"C:\Users\Paula\Documents\TP Integrador - Tec Proc de Imagenes"
 
     rutas = cargar_rutas_imagenes(carpeta_datos)
     
@@ -306,18 +320,13 @@ def main():
     cv2.namedWindow(VENTANA_DISPLAY, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(VENTANA_DISPLAY, ANCHO_IMG * 2 + 4, ALTO_IMG + 81)
     
-    # CONECTAR EL ESCUCHADOR DEL MOUSE
     cv2.setMouseCallback(VENTANA_DISPLAY, mouse_handler)
 
-    print(f"\n ¡Listo! Hacé click en los botones de la pantalla o arrastrá el slider de menú.\n")
-
     while True:
-        # Sincronizar variables locales con las globales del mouse
         indice = _estado_navegacion["indice"]
         modo = _estado_navegacion["modo"]
         total = _estado_navegacion["total"]
 
-        # Cargar imagen si cambió
         if indice != indice_cache:
             ruta, nombre_fruta = rutas[indice]
             imagen = cv2.imread(ruta)
@@ -328,12 +337,10 @@ def main():
             indice_cache = indice
             _necesita_actualizar[0] = True
 
-        # Recrear los sliders si cambió la técnica
         if modo != modo_anterior:
             crear_controles(modo)
             modo_anterior = modo
 
-        # Reprocesar pantalla
         if _necesita_actualizar[0]:
             _necesita_actualizar[0] = False
             try:
@@ -345,15 +352,12 @@ def main():
             panel = construir_display(img_actual, img_proc, modo, nombre_fruta, indice, total)
             cv2.imshow(VENTANA_DISPLAY, panel)
 
-        # Evento de guardado provocado por el click del mouse
         if _estado_navegacion["guardar"] and panel is not None:
             _estado_navegacion["guardar"] = False
             nombre_archivo = f"procesado_{indice:03d}_{nombre_fruta.replace(' ', '_')}_m{modo}.png"
-            ruta_guardado = os.path.join(script_dir, nombre_archivo)
-            cv2.imwrite(ruta_guardado, panel)
-            print(f"  [GUARDADO VIA INTERFAZ] {nombre_archivo}")
+            cv2.imwrite(os.path.join(script_dir, nombre_archivo), panel)
+            print(f"  [GUARDADO] {nombre_archivo}")
 
-        # Salida segura (Esc o Q)
         tecla = cv2.waitKey(30) & 0xFF
         if tecla in (ord('q'), 27):
             break
