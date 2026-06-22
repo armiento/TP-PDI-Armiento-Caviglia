@@ -137,3 +137,4 @@ Se abre en el navegador. Subí una imagen desde el panel izquierdo y ajustá los
 
 ### Interfaz de escritorio (OpenCV)
 ![Panel OpenCV](panel_017_apple_fruit.png)
+![Pantalla OpenCV](menudesplegable.jpeg)
