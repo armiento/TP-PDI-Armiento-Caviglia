@@ -163,7 +163,7 @@ class Motor:
         Args:
             delta_h: Desplazamiento del tono (−90 a +90).
             escala_s: Factor de saturación (0.0–2.0). 1.0 = sin cambio.
-            escala_v: Factor de brillo/value (0.0–2.0). 1.0 = sin cambio.
+                escala_v: Factor de brillo/value (0.0–2.0). 1.0 = sin cambio.
 
         Returns:
             Imagen BGR con los ajustes HSV aplicados.

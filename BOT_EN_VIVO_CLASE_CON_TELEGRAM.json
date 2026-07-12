@@ -1,0 +1,2197 @@
+{
+  "name": "BOT_EN_VIVO_CLASE_CON_TELEGRAM",
+  "nodes": [
+    {
+      "parameters": {
+        "name": "=audio-{{ $('Recibir Mensaje').item.json.message.from.id }}-{{ $('Recibir Mensaje').item.json.message.date }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1Z2bIOectPEcG-eR8oi8DFb8snhmgB3uB",
+          "mode": "list",
+          "cachedResultName": "AUDIOS_BOT_EN_VIVO",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1Z2bIOectPEcG-eR8oi8DFb8snhmgB3uB"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -320,
+        -112
+      ],
+      "id": "fa36eb0f-b53e-49d3-a94c-a44e3571ef80",
+      "name": "Subir audio a Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "e7nDRr6Q7jIBKWKZ",
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "be73531d-fa1d-4634-b18f-b8d52ad55d57"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "TEXTO"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ff4de56e-b433-46ad-af27-f8545ce0e30b",
+                    "leftValue": "={{ $json.message.voice }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AUDIO"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "3faa0013-1d51-4cea-8a11-02a51db39faa",
+                    "leftValue": "={{ $json.message.video }}",
+                    "rightValue": "video",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "VIDEO"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "54696892-3de7-4b3b-94a2-fe63d4cdf8cb",
+                    "leftValue": "={{ $json.message.location }}",
+                    "rightValue": "location",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "UBICACION"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "63cf942e-fc72-4f19-83a5-453b2e3c61e3",
+                    "leftValue": "={{ $json.callback_query.message.reply_markup.inline_keyboard }}",
+                    "rightValue": "interactive",
+                    "operator": {
+                      "type": "array",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "BOTONES"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1040,
+        16
+      ],
+      "id": "1c60ad89-f90c-4d63-9315-c33046a4724c",
+      "name": "SEPARAR por TIPO de MENSAJE"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c648e7c8-e373-4bec-a6ce-2086c1997b4a",
+              "name": "latitud",
+              "value": "={{ $json.message.location.latitude }}",
+              "type": "number"
+            },
+            {
+              "id": "bf13c1d4-bd99-4a05-ad92-e0b8761317b3",
+              "name": "longitud",
+              "value": "={{ $json.message.location.longitude }}",
+              "type": "number"
+            },
+            {
+              "id": "66a32189-95cf-4f23-8817-37a597014b78",
+              "name": "nro_whatsapp",
+              "value": "={{ $('Recibir Mensaje').item.json.message.chat.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -656,
+        416
+      ],
+      "id": "6a6604d1-1c25-43d8-b109-895c2ab51768",
+      "name": "Guadar datos ubicacion"
+    },
+    {
+      "parameters": {
+        "chatId": "-1003808993641",
+        "text": "=El numero:  {{ $json.nro_whatsapp }} mando su ubicacion actual",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -320,
+        416
+      ],
+      "id": "5956c6d2-de2d-47a0-bdf7-abac9bc3caa1",
+      "name": "Enviar alerta ubicacion a grupo",
+      "webhookId": "1d50e779-f9aa-415d-b3b0-5809c9b9eb7d",
+      "credentials": {
+        "telegramApi": {
+          "id": "qN8eIOMsjWblaD11",
+          "name": "IAMAILVOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendLocation",
+        "chatId": "-1003808993641",
+        "latitude": "={{ $('Guadar datos ubicacion').item.json.latitud }}",
+        "longitude": "={{ $('Guadar datos ubicacion').item.json.longitud }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        416
+      ],
+      "id": "37edd3d2-33b0-41d2-85f6-d9c5690fd765",
+      "name": "Enviar alerta ubicacion a grupo1",
+      "webhookId": "be4b0475-ac0a-4e27-b8ba-c66c8b78841a",
+      "credentials": {
+        "telegramApi": {
+          "id": "qN8eIOMsjWblaD11",
+          "name": "IAMAILVOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "policia",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "5deee89f-89da-40ee-8865-c758e40678ab"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "POLICIA"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "3ddd0e9f-0f9e-4992-998d-1138b98fa9ad",
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "same",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "SAME"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f03603b9-fbd2-437e-bd5d-a8c9c734f6e0",
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "siniestro",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "SINIESTROS"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -688,
+        816
+      ],
+      "id": "36f070e5-97ec-4a8e-a884-faa0de51b69b",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0",
+          "mode": "list",
+          "cachedResultName": "BASE_DE_DATOS_BOT_CAÑUELAS_2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TELEFONO_VECINO": "={{ $json.result.chat.id }}",
+            "NOMBRE": "={{ $json.result.chat.first_name || Vecino }} ",
+            "TIPO_ALERTA": "SINIESTRO",
+            "ESTADO": "INFORMADO",
+            "FECHA": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "FECHA",
+              "displayName": "FECHA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TELEFONO_VECINO",
+              "displayName": "TELEFONO_VECINO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "NOMBRE",
+              "displayName": "NOMBRE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TIPO_ALERTA",
+              "displayName": "TIPO_ALERTA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MENSAJE",
+              "displayName": "MENSAJE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "UBICACION",
+              "displayName": "UBICACION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "LINK DE ARCHIVO",
+              "displayName": "LINK DE ARCHIVO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ESTADO",
+              "displayName": "ESTADO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "NOTAS_DE_OPERADOR",
+              "displayName": "NOTAS_DE_OPERADOR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        1008
+      ],
+      "id": "ca43f12a-e6a8-4f4c-ab57-b41d1e2f6a74",
+      "name": "INSERTAR SINIESTRO EN BD",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KwI5IUIEeTBX14M8",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0",
+          "mode": "list",
+          "cachedResultName": "BASE_DE_DATOS_BOT_CAÑUELAS_2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TELEFONO_VECINO": "={{ $json.result.chat.id }}",
+            "NOMBRE": "={{ $json.result.chat.first_name || Vecino }} ",
+            "ESTADO": "INFORMADO",
+            "FECHA": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+            "TIPO_ALERTA": "EMERGENCIA MEDICA"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "FECHA",
+              "displayName": "FECHA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TELEFONO_VECINO",
+              "displayName": "TELEFONO_VECINO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "NOMBRE",
+              "displayName": "NOMBRE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TIPO_ALERTA",
+              "displayName": "TIPO_ALERTA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MENSAJE",
+              "displayName": "MENSAJE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "UBICACION",
+              "displayName": "UBICACION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "LINK DE ARCHIVO",
+              "displayName": "LINK DE ARCHIVO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ESTADO",
+              "displayName": "ESTADO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "NOTAS_DE_OPERADOR",
+              "displayName": "NOTAS_DE_OPERADOR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        832
+      ],
+      "id": "45f90452-17b6-46db-a3c8-4532ca906f90",
+      "name": "INSERTAR E MEDICA EN BD",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KwI5IUIEeTBX14M8",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0",
+          "mode": "list",
+          "cachedResultName": "BASE_DE_DATOS_BOT_CAÑUELAS_2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TELEFONO_VECINO": "={{ $json.result.chat.id }}",
+            "NOMBRE": "={{ $json.result.chat.first_name  || Vecino }} ",
+            "TIPO_ALERTA": "ALERTA ROJA",
+            "ESTADO": "INFORMADO",
+            "FECHA": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "FECHA",
+              "displayName": "FECHA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TELEFONO_VECINO",
+              "displayName": "TELEFONO_VECINO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "NOMBRE",
+              "displayName": "NOMBRE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TIPO_ALERTA",
+              "displayName": "TIPO_ALERTA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MENSAJE",
+              "displayName": "MENSAJE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "UBICACION",
+              "displayName": "UBICACION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "LINK DE ARCHIVO",
+              "displayName": "LINK DE ARCHIVO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ESTADO",
+              "displayName": "ESTADO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "NOTAS_DE_OPERADOR",
+              "displayName": "NOTAS_DE_OPERADOR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        640
+      ],
+      "id": "ea6c83d4-1627-4935-9eb9-faf7c65f25ee",
+      "name": "INSERTAR ALERTA ROJA EN BD",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KwI5IUIEeTBX14M8",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0",
+          "mode": "list",
+          "cachedResultName": "BASE_DE_DATOS_BOT_CAÑUELAS_2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TELEFONO_VECINO": "={{ $('Recibir Mensaje').item.json.message.from.id }}",
+            "NOMBRE": "={{ $('Recibir Mensaje').item.json.message.from.first_name || Vecino }}",
+            "ESTADO": "INFORMADO",
+            "FECHA": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+            "LINK DE ARCHIVO": "={{ $('Subir audio a Drive').item.json.webViewLink }}",
+            "TIPO_ALERTA": "AUDIO"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "FECHA",
+              "displayName": "FECHA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TELEFONO_VECINO",
+              "displayName": "TELEFONO_VECINO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "NOMBRE",
+              "displayName": "NOMBRE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TIPO_ALERTA",
+              "displayName": "TIPO_ALERTA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "MENSAJE",
+              "displayName": "MENSAJE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "UBICACION",
+              "displayName": "UBICACION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "LINK DE ARCHIVO",
+              "displayName": "LINK DE ARCHIVO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ESTADO",
+              "displayName": "ESTADO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "NOTAS_DE_OPERADOR",
+              "displayName": "NOTAS_DE_OPERADOR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        144,
+        -112
+      ],
+      "id": "639ce97c-73f9-4a5c-80fe-d8ea7e2e92e5",
+      "name": "INSERTAR AUDIO EN BD",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KwI5IUIEeTBX14M8",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0",
+          "mode": "list",
+          "cachedResultName": "BASE_DE_DATOS_BOT_CAÑUELAS_2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TELEFONO_VECINO": "={{ $json.result.chat.id }}",
+            "NOMBRE": "={{ $json.result.chat.first_name }}",
+            "ESTADO": "INFORMADO",
+            "FECHA": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+            "MENSAJE": "={{ $('Recibir Mensaje').item.json.message.text }}",
+            "TIPO_ALERTA": "MENSAJE"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "FECHA",
+              "displayName": "FECHA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TELEFONO_VECINO",
+              "displayName": "TELEFONO_VECINO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "NOMBRE",
+              "displayName": "NOMBRE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TIPO_ALERTA",
+              "displayName": "TIPO_ALERTA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "MENSAJE",
+              "displayName": "MENSAJE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "UBICACION",
+              "displayName": "UBICACION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "LINK DE ARCHIVO",
+              "displayName": "LINK DE ARCHIVO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ESTADO",
+              "displayName": "ESTADO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "NOTAS_DE_OPERADOR",
+              "displayName": "NOTAS_DE_OPERADOR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        144,
+        -272
+      ],
+      "id": "0ae809ab-6118-4540-8963-d65c3ea3a557",
+      "name": "INSERTAR MENSAJE EN BD",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KwI5IUIEeTBX14M8",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1408,
+        80
+      ],
+      "id": "e349c7c2-542e-4654-a4b9-06b579149ced",
+      "name": "Recibir Mensaje",
+      "webhookId": "7400890e-7d2d-4a42-b810-3d8d10374581",
+      "credentials": {
+        "telegramApi": {
+          "id": "qN8eIOMsjWblaD11",
+          "name": "IAMAILVOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.from.id }}",
+        "text": "=🚨 SISTEMA OJOS EN ALERTA - CAÑUELAS 🚨  ¡Hola! Soy el asistente virtual del Centro de Operaciones Municipal. Este canal está diseñado para que reportes emergencias o situaciones sospechosas de forma directa.  ¿Qué podés reportar por acá? 📌 Seguridad: Personas o vehículos sospechosos. 📌 Emergencias: Accidentes de tránsito o incendios. 📌 Salud: Pedido de ambulancias (SAME).  ¿Cómo funciona?  Escribí tu reporte indicando QUÉ pasa y compartí tu UBICACIÓN 📎 usando el clip de WhatsApp. Si no podés, escribí la dirección exacta (calle, altura y entrecalles) y describí qué está pasando.  Un operador humano recibirá la alerta al instante.  El sistema te informará cuando los recursos estén en camino.  ⚠️ Si tu vida corre peligro inmediato, también puedes llamar al 911.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -640,
+        -272
+      ],
+      "id": "640901d6-2729-4fe4-9b68-415307855811",
+      "name": "MENSAJE GENERICO",
+      "webhookId": "c36c43c4-5aa1-4b7d-814a-d108a0444b2d",
+      "credentials": {
+        "telegramApi": {
+          "id": "qN8eIOMsjWblaD11",
+          "name": "IAMAILVOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -640,
+        -112
+      ],
+      "id": "5c250fba-6c72-483a-80b2-8f8ce9739913",
+      "name": "Obtener audio",
+      "webhookId": "c36c43c4-5aa1-4b7d-814a-d108a0444b2d",
+      "credentials": {
+        "telegramApi": {
+          "id": "qN8eIOMsjWblaD11",
+          "name": "IAMAILVOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.photo[0].file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -640,
+        48
+      ],
+      "id": "456779c1-7ba1-4e6a-bb5d-9b102b53ec91",
+      "name": "Obtener imagen",
+      "webhookId": "c36c43c4-5aa1-4b7d-814a-d108a0444b2d",
+      "credentials": {
+        "telegramApi": {
+          "id": "qN8eIOMsjWblaD11",
+          "name": "IAMAILVOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.video.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -640,
+        224
+      ],
+      "id": "9f54be0b-7f71-4d5d-9291-57aabc5a8dce",
+      "name": "Obtener video",
+      "webhookId": "c36c43c4-5aa1-4b7d-814a-d108a0444b2d",
+      "credentials": {
+        "telegramApi": {
+          "id": "qN8eIOMsjWblaD11",
+          "name": "IAMAILVOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Recibir Mensaje').item.json.message.chat.id }}",
+        "text": "=Hemos recibido tu audio",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        -112
+      ],
+      "id": "c10a5b42-56da-40e2-a2b3-90abce07eb42",
+      "name": "AUDIO RECIBIDO",
+      "webhookId": "c36c43c4-5aa1-4b7d-814a-d108a0444b2d",
+      "credentials": {
+        "telegramApi": {
+          "id": "qN8eIOMsjWblaD11",
+          "name": "IAMAILVOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "=imagen-{{ $('Recibir Mensaje').item.json.message.from.id }}-{{ $('Recibir Mensaje').item.json.message.date }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "11TDiG3cRydQLsyMWNQI225QNPG47EJUJ",
+          "mode": "list",
+          "cachedResultName": "FOTOS_BOT",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/11TDiG3cRydQLsyMWNQI225QNPG47EJUJ"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -320,
+        48
+      ],
+      "id": "04e0eba7-9171-4f72-a565-27fdb3aeabf7",
+      "name": "Subir imagen a Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "e7nDRr6Q7jIBKWKZ",
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "=video-{{ $('Recibir Mensaje').item.json.message.from.id }}-{{ $('Recibir Mensaje').item.json.message.date }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1Z2bIOectPEcG-eR8oi8DFb8snhmgB3uB",
+          "mode": "list",
+          "cachedResultName": "AUDIOS_BOT_EN_VIVO",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1Z2bIOectPEcG-eR8oi8DFb8snhmgB3uB"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -320,
+        224
+      ],
+      "id": "48bdfc68-d3e7-4322-97c6-23c4cd741902",
+      "name": "Subir video a Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "e7nDRr6Q7jIBKWKZ",
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Recibir Mensaje').item.json.message.chat.id }}",
+        "text": "=Hemos recibido tu video",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        224
+      ],
+      "id": "c6f7ed79-1441-4b04-916c-d7292c6b6646",
+      "name": "VIDEO RECIBIDO",
+      "webhookId": "c36c43c4-5aa1-4b7d-814a-d108a0444b2d",
+      "credentials": {
+        "telegramApi": {
+          "id": "qN8eIOMsjWblaD11",
+          "name": "IAMAILVOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Recibir Mensaje').item.json.message.chat.id }}",
+        "text": "=Hemos recibido tu imagen",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        48
+      ],
+      "id": "8235cffa-71d3-42ed-9e3f-6e2f1b2a3758",
+      "name": "IMAGEN RECIBIDO",
+      "webhookId": "c36c43c4-5aa1-4b7d-814a-d108a0444b2d",
+      "credentials": {
+        "telegramApi": {
+          "id": "qN8eIOMsjWblaD11",
+          "name": "IAMAILVOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0",
+          "mode": "list",
+          "cachedResultName": "BASE_DE_DATOS_BOT_CAÑUELAS_2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TELEFONO_VECINO": "={{ $('Recibir Mensaje').item.json.message.from.id }}",
+            "NOMBRE": "={{ $('Recibir Mensaje').item.json.message.from.first_name || Vecino }}",
+            "ESTADO": "INFORMADO",
+            "FECHA": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+            "LINK DE ARCHIVO": "={{ $('Subir imagen a Drive').item.json.webViewLink }}",
+            "TIPO_ALERTA": "IMAGEN"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "FECHA",
+              "displayName": "FECHA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TELEFONO_VECINO",
+              "displayName": "TELEFONO_VECINO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "NOMBRE",
+              "displayName": "NOMBRE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TIPO_ALERTA",
+              "displayName": "TIPO_ALERTA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "MENSAJE",
+              "displayName": "MENSAJE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "UBICACION",
+              "displayName": "UBICACION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "LINK DE ARCHIVO",
+              "displayName": "LINK DE ARCHIVO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ESTADO",
+              "displayName": "ESTADO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "NOTAS_DE_OPERADOR",
+              "displayName": "NOTAS_DE_OPERADOR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        144,
+        48
+      ],
+      "id": "81b1b79f-96d1-45a5-8a99-d4583757de03",
+      "name": "INSERTAR IMAGEN EN BD",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KwI5IUIEeTBX14M8",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0",
+          "mode": "list",
+          "cachedResultName": "BASE_DE_DATOS_BOT_CAÑUELAS_2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TELEFONO_VECINO": "={{ $('Recibir Mensaje').item.json.message.from.id }}",
+            "NOMBRE": "={{ $('Recibir Mensaje').item.json.message.from.first_name || Vecino }}",
+            "ESTADO": "INFORMADO",
+            "FECHA": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+            "LINK DE ARCHIVO": "={{ $('Subir video a Drive').item.json.webViewLink }}",
+            "TIPO_ALERTA": "VIDEO"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "FECHA",
+              "displayName": "FECHA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TELEFONO_VECINO",
+              "displayName": "TELEFONO_VECINO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "NOMBRE",
+              "displayName": "NOMBRE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TIPO_ALERTA",
+              "displayName": "TIPO_ALERTA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "MENSAJE",
+              "displayName": "MENSAJE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "UBICACION",
+              "displayName": "UBICACION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "LINK DE ARCHIVO",
+              "displayName": "LINK DE ARCHIVO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ESTADO",
+              "displayName": "ESTADO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "NOTAS_DE_OPERADOR",
+              "displayName": "NOTAS_DE_OPERADOR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        144,
+        224
+      ],
+      "id": "1917a49f-dd77-4f8a-81f0-db4b685e093e",
+      "name": "INSERTAR VIDEO EN BD",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KwI5IUIEeTBX14M8",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Recibir Mensaje').item.json.message.chat.id }}",
+        "text": "=Hemos recibido tu ubicacion, en seguida enviamos un movil para alla",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        416
+      ],
+      "id": "3a00fd8c-c80c-470f-9c2d-d7dcdb0b4874",
+      "name": "UBICACION RECIBIDA",
+      "webhookId": "c36c43c4-5aa1-4b7d-814a-d108a0444b2d",
+      "credentials": {
+        "telegramApi": {
+          "id": "qN8eIOMsjWblaD11",
+          "name": "IAMAILVOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0",
+          "mode": "list",
+          "cachedResultName": "BASE_DE_DATOS_BOT_CAÑUELAS_2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MjtV37FmqxeY7QIdhsFlJUJsm9Pj4P-8-qqgUeXY2t0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TELEFONO_VECINO": "={{ $('Recibir Mensaje').item.json.message.from.id }}",
+            "NOMBRE": "={{ $('Recibir Mensaje').item.json.message.from.first_name || Vecino }}",
+            "ESTADO": "INFORMADO",
+            "FECHA": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+            "TIPO_ALERTA": "UBICACION",
+            "UBICACION": "=https://www.google.com/maps/search/?api=1&query={{ $('Guadar datos ubicacion').item.json.latitud }},{{ $('Guadar datos ubicacion').item.json.longitud }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "FECHA",
+              "displayName": "FECHA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TELEFONO_VECINO",
+              "displayName": "TELEFONO_VECINO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "NOMBRE",
+              "displayName": "NOMBRE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TIPO_ALERTA",
+              "displayName": "TIPO_ALERTA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "MENSAJE",
+              "displayName": "MENSAJE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "UBICACION",
+              "displayName": "UBICACION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LINK DE ARCHIVO",
+              "displayName": "LINK DE ARCHIVO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ESTADO",
+              "displayName": "ESTADO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "NOTAS_DE_OPERADOR",
+              "displayName": "NOTAS_DE_OPERADOR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        400,
+        416
+      ],
+      "id": "15c0fc66-19b7-4718-b44c-490bdd896891",
+      "name": "INSERTAR UBICACION EN BD",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KwI5IUIEeTBX14M8",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Recibir Mensaje').item.json.callback_query.from.id }}",
+        "text": "=Entendido. Por favor, enviá tu UBICACIÓN actual usando el clip de WhatsApp 📎 y describí brevemente la situación (ej: cuántos son, cómo están vestidos)",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        640
+      ],
+      "id": "28ed1f1e-1d84-4f0e-ab9c-8b447e5f5565",
+      "name": "ALERTA ROJA RECIBIDA",
+      "webhookId": "c36c43c4-5aa1-4b7d-814a-d108a0444b2d",
+      "credentials": {
+        "telegramApi": {
+          "id": "qN8eIOMsjWblaD11",
+          "name": "IAMAILVOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Recibir Mensaje').item.json.callback_query.from.id }}",
+        "text": "=\"Entendido. Necesitamos enviar la ambulancia. Compartí tu UBICACIÓN 📎 ahora mismo e indicá si hay personas inconscientes o atrapadas.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        832
+      ],
+      "id": "301a453b-bc55-4889-a8d6-cb93db0be6b8",
+      "name": "EMERGENCIA MEDICA RECIBIDA",
+      "webhookId": "c36c43c4-5aa1-4b7d-814a-d108a0444b2d",
+      "credentials": {
+        "telegramApi": {
+          "id": "qN8eIOMsjWblaD11",
+          "name": "IAMAILVOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Recibir Mensaje').item.json.callback_query.from.id }}",
+        "text": "=Entendido. Enviá la UBICACIÓN 📎 y, SOLO si es seguro hacerlo, enviá una FOTO para que los bomberos evalúen la magnitud del equipo necesario.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        1008
+      ],
+      "id": "889e5c19-5134-4cb0-9fd0-57562024f1a7",
+      "name": "SINIESTROS RECIBIDO",
+      "webhookId": "c36c43c4-5aa1-4b7d-814a-d108a0444b2d",
+      "credentials": {
+        "telegramApi": {
+          "id": "qN8eIOMsjWblaD11",
+          "name": "IAMAILVOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot<token>/sendMessage",
+        "authentication": "genericCredentialType",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "={{ $json.result.chat.id }}"
+            },
+            {
+              "name": "text",
+              "value": "👇 Elegí una opción de emergencia:"
+            },
+            {
+              "name": "reply_markup",
+              "value": "=\n\"reply_markup\": \n{\n  \n\"inline_keyboard\": \n[\n  \n[\n  \n{\n  \n  \n\"text\": \n\"🚨 Policia/Seguridad\",\n \n\"callback_data\": \n\"policia\"\n\n  \n}\n  \n\n],\n  \n[\n\n  \n{\n  \n\"text\": \n\"🚑 Ambulancia/SAME\",\n  \n  \n  \n  \n  \n  \n  \n  \n\"callback_data\": \n\"same\"\n  \n  \n  \n  \n  \n  \n  \n}\n  \n  \n  \n  \n  \n  \n],\n  \n  \n  \n  \n  \n  \n[\n  \n  \n  \n  \n  \n  \n  \n{\n  \n  \n  \n  \n  \n  \n  \n  \n\"text\": \n\"🚒 Bomberos/Siniestros\",\n  \n  \n  \n  \n  \n  \n  \n  \n\"callback_data\": \n\"siniestro\"\n  \n  \n  \n  \n  \n  \n  \n}\n  \n  \n  \n  \n  \n  \n]\n  \n  \n  \n  \n  \n]\n  \n  \n  \n  \n}\n  \n  \n  \n},"
+            },
+            {
+              "name": "parse_mode",
+              "value": "Markdown"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -256,
+        -272
+      ],
+      "id": "4fbeef7a-73e5-46e9-9f6e-21b96c043447",
+      "name": "mandar boton de opciones telegram"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Subir audio a Drive": {
+      "main": [
+        [
+          {
+            "node": "AUDIO RECIBIDO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SEPARAR por TIPO de MENSAJE": {
+      "main": [
+        [
+          {
+            "node": "MENSAJE GENERICO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Obtener audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Obtener video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Guadar datos ubicacion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guadar datos ubicacion": {
+      "main": [
+        [
+          {
+            "node": "Enviar alerta ubicacion a grupo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar alerta ubicacion a grupo": {
+      "main": [
+        [
+          {
+            "node": "Enviar alerta ubicacion a grupo1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar alerta ubicacion a grupo1": {
+      "main": [
+        [
+          {
+            "node": "UBICACION RECIBIDA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "ALERTA ROJA RECIBIDA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "EMERGENCIA MEDICA RECIBIDA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SINIESTROS RECIBIDO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recibir Mensaje": {
+      "main": [
+        [
+          {
+            "node": "SEPARAR por TIPO de MENSAJE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MENSAJE GENERICO": {
+      "main": [
+        [
+          {
+            "node": "mandar boton de opciones telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener audio": {
+      "main": [
+        [
+          {
+            "node": "Subir audio a Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener video": {
+      "main": [
+        [
+          {
+            "node": "Subir video a Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener imagen": {
+      "main": [
+        [
+          {
+            "node": "Subir imagen a Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AUDIO RECIBIDO": {
+      "main": [
+        [
+          {
+            "node": "INSERTAR AUDIO EN BD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subir imagen a Drive": {
+      "main": [
+        [
+          {
+            "node": "IMAGEN RECIBIDO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subir video a Drive": {
+      "main": [
+        [
+          {
+            "node": "VIDEO RECIBIDO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VIDEO RECIBIDO": {
+      "main": [
+        [
+          {
+            "node": "INSERTAR VIDEO EN BD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IMAGEN RECIBIDO": {
+      "main": [
+        [
+          {
+            "node": "INSERTAR IMAGEN EN BD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UBICACION RECIBIDA": {
+      "main": [
+        [
+          {
+            "node": "INSERTAR UBICACION EN BD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ALERTA ROJA RECIBIDA": {
+      "main": [
+        [
+          {
+            "node": "INSERTAR ALERTA ROJA EN BD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EMERGENCIA MEDICA RECIBIDA": {
+      "main": [
+        [
+          {
+            "node": "INSERTAR E MEDICA EN BD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SINIESTROS RECIBIDO": {
+      "main": [
+        [
+          {
+            "node": "INSERTAR SINIESTRO EN BD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mandar boton de opciones telegram": {
+      "main": [
+        [
+          {
+            "node": "INSERTAR MENSAJE EN BD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "1f5a82c7-8d21-4c06-89e4-76cc85404cca",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "93b9f87c6c7a720fa179a366a0f180630638463acf77c0effa3845f3e572382d"
+  },
+  "nodeGroups": [],
+  "id": "ECk9Ch3AWRWHK5wm",
+  "tags": []
+}
